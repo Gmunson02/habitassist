@@ -6,8 +6,9 @@ import 'tailwindcss/tailwind.css';
 function WeightTracker() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [weight, setWeight] = useState('');
-    const [bodyFat, setBodyFat] = useState('');
     const [bmi, setBmi] = useState('');
+    const [bodyFat, setBodyFat] = useState('');
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -16,12 +17,12 @@ function WeightTracker() {
     };
 
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-800">
-            <div className="p-4 max-w-sm w-full">
-                <h1 className="text-xl font-bold mb-6 text-center text-white">Daily Weight Tracker</h1>
+        <div className="flex justify-center bg-gray-800 min-h-screen">
+            <div className="p-4 max-w-sm w-full mt-10 md:mt-20">
+                <h1 className="text-xl font-bold mb-6 text-center text-white">Log Weight</h1>
                 <form onSubmit={handleSubmit} className="flex flex-col items-center">
                     <div className="mb-6 w-full">
-                        <label className="block text-sm font-bold mb-2 text-center text-white">
+                        <label className="block text-sm font-bold mb-2 text-white">
                             Date
                         </label>
                         <DatePicker
@@ -32,7 +33,7 @@ function WeightTracker() {
                     </div>
 
                     <div className="mb-6 w-full">
-                        <label className="block text-sm font-bold mb-2 text-center text-white">
+                        <label className="block text-sm font-bold mb-2 text-white">
                             Weight (lbs)
                         </label>
                         <input
@@ -46,7 +47,7 @@ function WeightTracker() {
                     </div>
 
                     <div className="mb-6 w-full">
-                        <label className="block text-sm font-bold mb-2 text-center text-white">
+                        <label className="block text-sm font-bold mb-2 text-white">
                             BMI
                         </label>
                         <input
@@ -60,7 +61,7 @@ function WeightTracker() {
                     </div>
 
                     <div className="mb-6 w-full">
-                        <label className="block text-sm font-bold mb-2 text-center text-white">
+                        <label className="block text-sm font-bold mb-2 text-white">
                             Body Fat Percentage (%)
                         </label>
                         <input
@@ -73,9 +74,7 @@ function WeightTracker() {
                         />
                     </div>
 
-
-
-                    <div className="mb-8 w-full">
+                    <div className="mb-10 w-full">
                         <button
                             type="submit"
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 w-full rounded focus:outline-none focus:shadow-outline">
