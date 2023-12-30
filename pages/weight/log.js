@@ -6,20 +6,47 @@ import 'tailwindcss/tailwind.css';
 function WeightTracker() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [weight, setWeight] = useState('');
-    const [bmi, setBmi] = useState('');
     const [bodyFat, setBodyFat] = useState('');
+    const [bmi, setBmi] = useState('');
 
-
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle the form submission logic here
-        console.log({ selectedDate, weight, bodyFat, bmi });
+
+        // Formatting the date as MM/DD/YYYY
+        const formattedDate =
+            (selectedDate.getMonth() + 1).toString().padStart(2, '0') + '/' +
+            selectedDate.getDate().toString().padStart(2, '0') + '/' +
+            selectedDate.getFullYear();
+
+        const selectedYear = selectedDate.getFullYear(); // Extracting the year
+
+        try {
+            const response = await fetch('/api/submitLogs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    selectedDate: formattedDate,
+                    selectedYear, // Adding the selectedYear
+                    weight,
+                    bodyFat,
+                    bmi
+                }),
+            });
+
+
+            // Additional code for handling response...
+        } catch (error) {
+            console.error('Error submitting weight data:', error);
+            // Additional error handling...
+        }
     };
 
     return (
         <div className="flex justify-center bg-gray-800 min-h-screen">
             <div className="p-4 max-w-sm w-full mt-10 md:mt-20">
-                <h1 className="text-xl font-bold mb-6 text-center text-white">Log Weight</h1>
+                <h1 className="text-xl font-bold mb-6 text-center text-white">Daily Weight Tracker</h1>
                 <form onSubmit={handleSubmit} className="flex flex-col items-center">
                     <div className="mb-6 w-full">
                         <label className="block text-sm font-bold mb-2 text-white">
