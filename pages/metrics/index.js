@@ -44,6 +44,9 @@ export default function Metrics() {
       <Link href="/metrics/new" className="block w-full bg-green-500 text-white py-2 mt-4 rounded text-center hover:bg-green-600">
         Add New Metric
       </Link>
+      <Link href="/dashboard" className="block w-full bg-gray-500 text-white py-2 mt-4 rounded text-center hover:bg-gray-600">
+        Back to Dashboard
+      </Link>
     </Layout>
   );
 }
