@@ -3,13 +3,14 @@ import axios from 'axios';
 
 const axiosInstance = axios.create();
 
-// Add a request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = JSON.parse(localStorage.getItem('token'));
+    console.log("Token retrieved from localStorage:", token); // Verify token retrieval
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log("Token attached:", token); // Debugging line to confirm the token
+      console.log("Authorization header set:", config.headers.Authorization); // Confirm Authorization header
     } else {
       console.warn("Token is missing"); // Warning if no token is found
     }

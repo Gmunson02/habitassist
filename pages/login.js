@@ -12,14 +12,14 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+  
     try {
       const response = await axios.post('/api/auth/login', { username, password });
       const token = response.data.token;
-
-      // Store token in localStorage
-      localStorage.setItem('token', token);
-
+  
+      // Explicitly convert to string to avoid array/JSON issues
+      localStorage.setItem('token', String(token));
+  
       // Redirect to the Dashboard
       router.push('/dashboard');
     } catch (err) {

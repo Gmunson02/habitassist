@@ -2,7 +2,7 @@
 import Layout from '../../components/Layout';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import axiosInstance from '../../utils/axiosInstance';
+import axios from 'axios';
 
 export default function Metrics() {
   const [metrics, setMetrics] = useState([]);
@@ -10,10 +10,16 @@ export default function Metrics() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const response = await axiosInstance.get('/api/metrics/getMetrics');
+        const token = localStorage.getItem('token'); // Retrieve token as a plain string
+        console.log("Token retrieved from localStorage:", token); // Debug log for token
+    
+        // Proceed with the API call using the token in the header
+        const response = await axios.get('/api/metrics/getMetrics', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setMetrics(response.data.metrics);
       } catch (error) {
-        console.error('Error fetching metrics:', error);
+        console.error("Error fetching metrics:", error);
       }
     };
 
