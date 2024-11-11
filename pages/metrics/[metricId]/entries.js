@@ -71,7 +71,7 @@ export default function Entries() {
         <Link href="/metrics" className="block w-full bg-blue-500 text-white py-2 rounded text-center hover:bg-blue-600">
           Back to Metrics
         </Link>
-        <Link href={`/metrics/${metricId}/new-entry`} className="block w-full bg-green-500 text-white py-2 rounded text-center hover:bg-green-600">
+        <Link href={`/metrics/${metricId}/newEntry`} className="block w-full bg-green-500 text-white py-2 rounded text-center hover:bg-green-600">
           Add New Entry
         </Link>
       </div>

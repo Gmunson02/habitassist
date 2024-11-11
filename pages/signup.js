@@ -1,6 +1,7 @@
 // pages/signup.js
 import { useState } from 'react';
 import axios from 'axios';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 export default function Signup() {
@@ -124,9 +125,9 @@ export default function Signup() {
         </form>
         <p className="text-center mt-4 dark:text-gray-400">
           Already have an account?{' '}
-          <a href="/login" className="text-blue-500 hover:underline dark:text-blue-400">
+          <Link href="/login" className="text-blue-500 hover:underline dark:text-blue-400">
             Log in
-          </a>
+          </Link>
         </p>
       </div>
     </div>
