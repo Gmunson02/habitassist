@@ -9,11 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "airtable": "^0.12.2",
+    "axios": "^1.7.7",
+    "bcryptjs": "^2.4.3",
     "googleapis": "^129.0.0",
-    "next": "^14.0.4",
-    "react": "^18.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "next": "^15.0.3",
+    "react": "^18.3.1",
     "react-datepicker": "^4.25.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "^20",
