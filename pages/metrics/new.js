@@ -9,11 +9,11 @@ export default function NewMetric() {
   const [unit, setUnit] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJlY21ZbGtoWEI2ellCQm1VIiwidXNlcm5hbWUiOiJ0ZXN0dXNlcjIiLCJpYXQiOjE3MzEyODkxMzQsImV4cCI6MTczMTI5MjczNH0.ptT-u_oEj2P8vqV_oVXZHw-fL7tiu9OOHyCcgdwtVaY'; // Replace with actual JWT token for testing
+  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InJlY21ZbGtoWEI2ellCQm1VIiwidXNlcm5hbWUiOiJ0ZXN0dXNlcjIiLCJpYXQiOjE3MzEyODkxMzQsImV4cCI6MTczMTI5MjczNH0.ptT-u_oEj2P8vqV_oVXZHw-fL7tiu9OOHyCcgdwtVaY'; // Replace with actual token
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); // Clear any previous error messages
+    setError('');
 
     if (!metricName || !unit) {
       setError('Please provide both metric name and unit.');
@@ -26,7 +26,7 @@ export default function NewMetric() {
         metricName,
         unit,
       });
-      router.push('/metrics'); // Redirect to the Metrics page on success
+      router.push('/metrics');
     } catch (err) {
       console.error('Error adding metric:', err);
       setError('Failed to add metric. Please try again.');
@@ -35,69 +35,33 @@ export default function NewMetric() {
 
   return (
     <Layout>
-      <h2 style={styles.heading}>Add New Metric</h2>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <label style={styles.label}>
-          Metric Name:
-          <input
-            type="text"
-            value={metricName}
-            onChange={(e) => setMetricName(e.target.value)}
-            style={styles.input}
-          />
-        </label>
-        <label style={styles.label}>
-          Unit:
-          <input
-            type="text"
-            value={unit}
-            onChange={(e) => setUnit(e.target.value)}
-            style={styles.input}
-          />
-        </label>
-        {error && <p style={styles.error}>{error}</p>}
-        <button type="submit" style={styles.button}>Add Metric</button>
-      </form>
+      <div className="p-4 min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-gray-100">
+        <h2 className="text-xl font-semibold mb-4">Add New Metric</h2>
+        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+          <label className="flex flex-col">
+            Metric Name:
+            <input
+              type="text"
+              value={metricName}
+              onChange={(e) => setMetricName(e.target.value)}
+              className="p-2 rounded border border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+            />
+          </label>
+          <label className="flex flex-col">
+            Unit:
+            <input
+              type="text"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+              className="p-2 rounded border border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+            />
+          </label>
+          {error && <p className="text-red-500">{error}</p>}
+          <button type="submit" className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">
+            Add Metric
+          </button>
+        </form>
+      </div>
     </Layout>
   );
 }
-
-const styles = {
-  heading: {
-    fontSize: '1.25rem',
-    fontWeight: '600',
-    marginBottom: '1rem',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    width: '100%',
-  },
-  label: {
-    width: '100%',
-    marginBottom: '0.75rem',
-    fontWeight: '500',
-  },
-  input: {
-    width: '100%',
-    padding: '0.5rem',
-    borderRadius: '0.25rem',
-    border: '1px solid #d1d5db',
-    marginTop: '0.25rem',
-  },
-  button: {
-    backgroundColor: '#10b981',
-    color: 'white',
-    padding: '0.5rem 1rem',
-    borderRadius: '0.25rem',
-    border: 'none',
-    cursor: 'pointer',
-    width: '100%',
-    marginTop: '1rem',
-  },
-  error: {
-    color: '#ef4444',
-    marginBottom: '1rem',
-  },
-};
