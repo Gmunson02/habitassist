@@ -1,21 +1,31 @@
 // pages/dashboard.js
 import Layout from '../components/Layout';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function Dashboard() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check for dark mode preference on the client side
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setIsDarkMode(true);
+    }
+  }, []);
+
   return (
     <Layout>
-      <div style={styles.container}>
+      <div style={{ ...styles.container, ...(isDarkMode ? styles.darkContainer : {}) }}>
         <h2 style={styles.heading}>Welcome to HabitAssist!</h2>
-        
-        <Link href="/metrics">
-          <a style={{ ...styles.button, backgroundColor: '#3b82f6' }}>View Metrics</a>
+
+        <Link href="/metrics" style={{ ...styles.button, backgroundColor: '#3b82f6' }}>
+          View Metrics
         </Link>
-        
-        <Link href="/metrics/new">
-          <a style={{ ...styles.button, backgroundColor: '#10b981' }}>Add New Metric</a>
+
+        <Link href="/metrics/new" style={{ ...styles.button, backgroundColor: '#10b981' }}>
+          Add New Metric
         </Link>
-        
+
         <div style={styles.message}>
           Track your habits and monitor your progress daily!
         </div>
@@ -31,6 +41,13 @@ const styles = {
     alignItems: 'center',
     textAlign: 'center',
     padding: '1rem',
+    minHeight: '100vh',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  darkContainer: {
+    backgroundColor: '#181818',
+    color: '#f0f0f0',
   },
   heading: {
     fontSize: '1.25rem',
@@ -38,6 +55,7 @@ const styles = {
     marginBottom: '1rem',
   },
   button: {
+    display: 'block',
     color: 'white',
     padding: '0.5rem 1rem',
     borderRadius: '0.25rem',
