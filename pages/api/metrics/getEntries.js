@@ -1,50 +1,56 @@
+// pages/api/metrics/getEntries.js
 import jwt from 'jsonwebtoken';
 import Airtable from 'airtable';
 
 const base = new Airtable({ apiKey: process.env.AIRTABLE_PAT }).base(process.env.AIRTABLE_BASE_ID);
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    const { token, metricId } = req.query;
+  console.log("Received request for getEntries");
 
-    // Verify JWT and extract userId
-    let userId;
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.id;
-    } catch (error) {
-      return res.status(401).json({ message: 'Invalid token', error: error.message });
-    }
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Only GET requests are allowed' });
+  }
 
-    try {
-      // Fetch all entries from Airtable
-      const records = await base('Entries')
-        .select({
-          sort: [{ field: 'Entry Date', direction: 'asc' }],
-        })
-        .all();
+  // Extract and verify token
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    console.error("No token provided in request");
+    return res.status(401).json({ message: 'Token is missing' });
+  }
 
-      // Filter records by userId and metricId after retrieval
-      const filteredEntries = records
-        .filter((record) => 
-          record.fields['User ID']?.includes(userId) && 
-          record.fields['Metric ID']?.includes(metricId)
-        )
-        .map((record) => ({
-          id: record.id,
-          userId: record.fields['User ID'],
-          metricId: record.fields['Metric ID'],
-          entryDate: record.fields['Entry Date'],
-          value: record.fields['Value'],
-          createdDate: record.fields['Created Date'],
-          entryId: record.fields['Entry ID'],
-        }));
+  let userId;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    userId = decoded.id;
+    console.log("Decoded User ID:", userId); // Confirm decoded user ID
+  } catch (error) {
+    console.error("Token verification failed:", error.message);
+    return res.status(401).json({ message: 'Invalid token' });
+  }
 
-      res.status(200).json({ entries: filteredEntries });
-    } catch (error) {
-      res.status(500).json({ message: 'Error retrieving entries', error: error.message });
-    }
-  } else {
-    res.status(405).json({ message: 'Only GET requests are allowed' });
+  try {
+    // Fetch entries from Airtable and log results
+    const records = await base('Entries')
+      .select()
+      .all();
+
+    console.log("Entries fetched from Airtable:", records.map(record => record.fields)); // Logs all entry records
+
+    // Filter records based on the user ID
+    const userEntries = records.filter(
+      (record) => record.fields['User ID']?.includes(userId)
+    ).map((record) => ({
+      id: record.id,
+      metricId: record.fields['Metric ID'] ? record.fields['Metric ID'][0] : null,
+      entryDate: record.fields['Entry Date'],
+      value: record.fields['Value'],
+    }));
+
+    console.log("Filtered entries for user:", userEntries);
+    res.status(200).json({ entries: userEntries });
+  } catch (error) {
+    console.error("Error retrieving entries:", error.message);
+    res.status(500).json({ message: 'Error retrieving entries', error: error.message });
   }
 }

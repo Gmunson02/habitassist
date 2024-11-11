@@ -12,15 +12,12 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-  
+
     try {
       const response = await axios.post('/api/auth/login', { username, password });
       const token = response.data.token;
-  
-      // Explicitly convert to string to avoid array/JSON issues
-      localStorage.setItem('token', String(token));
-  
-      // Redirect to the Dashboard
+      localStorage.setItem('token', token);
+
       router.push('/dashboard');
     } catch (err) {
       setError('Invalid username or password');
@@ -51,10 +48,7 @@ export default function Login() {
             />
           </div>
           {error && <p className="text-red-500">{error}</p>}
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-          >
+          <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-600">
             Login
           </button>
         </form>
