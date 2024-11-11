@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 export default function Entries() {
   const [entries, setEntries] = useState([]);
-  const [metricName, setMetricName] = useState('Metric');
+  const [metricName, setMetricName] = useState('');
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { metricId } = router.query;
@@ -18,30 +18,41 @@ export default function Entries() {
 
       if (token && metricId) {
         try {
-          // Fetch entries related to the metric ID
+          // Fetch the metric name
+          const metricResponse = await axios.get(`/api/metrics/getMetricById?metricId=${metricId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setMetricName(metricResponse.data.metricName);
+
+          // Fetch entries
           const response = await axios.get(`/api/metrics/getEntries?metricId=${metricId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setEntries(response.data.entries);
-
-          // Fetch metric name for display in the header
-          const metricResponse = await axios.get(`/api/metrics/getMetricById`, {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { metricId },
-          });
-          setMetricName(metricResponse.data.metricName || 'Metric');
         } catch (error) {
-          console.error("Error fetching entries or metric name:", error);
+          console.error("Error fetching entries:", error);
         } finally {
           setLoading(false);
         }
-      } else {
-        setLoading(false);
       }
     };
 
     fetchEntries();
   }, [metricId]);
+
+  const handleDelete = async (entryId) => {
+    const token = localStorage.getItem('token');
+
+    try {
+      await axios.delete(`/api/metrics/deleteEntry`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { entryId },
+      });
+      setEntries(entries.filter((entry) => entry.id !== entryId));
+    } catch (error) {
+      console.error("Error deleting entry:", error);
+    }
+  };
 
   return (
     <Layout>
@@ -59,6 +70,20 @@ export default function Entries() {
               <p>
                 <span className="font-semibold">Value:</span> {entry.value} {entry.unit}
               </p>
+              <div className="flex space-x-4 mt-2">
+                <button
+                  onClick={() => handleDelete(entry.id)}
+                  className="text-red-500 hover:text-red-600"
+                >
+                  Delete Entry
+                </button>
+                <Link
+                  href={`/metrics/${metricId}/updateEntry?entryId=${entry.id}`}
+                  className="text-blue-500 hover:underline"
+                >
+                  Update Entry
+                </Link>
+              </div>
             </li>
           ))}
         </ul>
@@ -68,10 +93,10 @@ export default function Entries() {
 
       {/* Navigation Links */}
       <div className="flex flex-col space-y-4 mt-6">
-        <Link href="/metrics" className="block w-full bg-blue-500 text-white py-2 rounded text-center hover:bg-blue-600">
-          Back to Metrics
+        <Link href="/dashboard" className="block w-full bg-blue-500 text-white py-2 rounded text-center hover:bg-blue-600">
+          Back to Dashboard
         </Link>
-        <Link href={`/metrics/${metricId}/newEntry`} className="block w-full bg-green-500 text-white py-2 rounded text-center hover:bg-green-600">
+        <Link href={`/metrics/${metricId}/new-entry`} className="block w-full bg-green-500 text-white py-2 rounded text-center hover:bg-green-600">
           Add New Entry
         </Link>
       </div>
