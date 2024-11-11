@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -16,8 +17,8 @@ export default function Login() {
     try {
       const response = await axios.post('/api/auth/login', { username, password });
       const token = response.data.token;
-      localStorage.setItem('token', token);
 
+      localStorage.setItem('token', token);
       router.push('/dashboard');
     } catch (err) {
       setError('Invalid username or password');
@@ -48,10 +49,20 @@ export default function Login() {
             />
           </div>
           {error && <p className="text-red-500">{error}</p>}
-          <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-600">
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+          >
             Login
           </button>
         </form>
+        
+        <p className="text-center mt-4 dark:text-gray-400">
+          Not a user yet?{' '}
+          <Link href="/signup" className="text-blue-500 hover:underline dark:text-blue-400">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );
