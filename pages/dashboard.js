@@ -107,6 +107,9 @@ export default function Dashboard() {
             <Link href="/metrics" className="block w-full bg-blue-500 text-white py-2 rounded text-center hover:bg-blue-600">
               View All Metrics
             </Link>
+            <Link href="/profile" className="text-blue-500 hover:underline">
+  Profile
+</Link>
           </div>
         </>
       )}
