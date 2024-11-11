@@ -7,7 +7,8 @@ import Link from 'next/link';
 
 export default function Entries() {
   const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true); // Add loading state to manage loading text
+  const [metricName, setMetricName] = useState('Metric');
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { metricId } = router.query;
 
@@ -17,17 +18,25 @@ export default function Entries() {
 
       if (token && metricId) {
         try {
+          // Fetch entries related to the metric ID
           const response = await axios.get(`/api/metrics/getEntries?metricId=${metricId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setEntries(response.data.entries);
+
+          // Fetch metric name for display in the header
+          const metricResponse = await axios.get(`/api/metrics/getMetricById`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { metricId },
+          });
+          setMetricName(metricResponse.data.metricName || 'Metric');
         } catch (error) {
-          console.error("Error fetching entries:", error);
+          console.error("Error fetching entries or metric name:", error);
         } finally {
-          setLoading(false); // Ensure loading is set to false after the API call
+          setLoading(false);
         }
       } else {
-        setLoading(false); // Stop loading if there's no token or metricId
+        setLoading(false);
       }
     };
 
@@ -36,7 +45,7 @@ export default function Entries() {
 
   return (
     <Layout>
-      <h2 className="text-xl font-semibold mb-4 text-center">Entries for Metric</h2>
+      <h2 className="text-xl font-semibold mb-4 text-center">Entries for {metricName}</h2>
 
       {loading ? (
         <p>Loading entries...</p>

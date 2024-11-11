@@ -12,10 +12,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log("Token retrieved from localStorage in Dashboard:", token); // Debug log for token
-
     if (!token) {
-      router.replace('/login'); // Use replace to avoid additional history entries
+      router.push('/login');
       return;
     }
 
@@ -25,22 +23,16 @@ export default function Dashboard() {
         const metricsResponse = await axios.get('/api/metrics/getMetrics', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Metrics Response:", metricsResponse.data); // Log metrics response data
         setMetrics(metricsResponse.data.metrics);
 
         // Fetch recent entries
         const entriesResponse = await axios.get('/api/metrics/getEntries', {
           headers: { Authorization: `Bearer ${token}` },
-          params: { limit: 5 }, // Adjust the limit as needed
+          params: { limit: 5 },
         });
-        console.log("Entries Response:", entriesResponse.data); // Log entries response data
         setRecentEntries(entriesResponse.data.entries);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error); // Log full error object
-        if (error.response && error.response.status === 401) {
-          console.warn("Received 401 Unauthorized - Redirecting to login"); // Specific log for 401
-          router.replace('/login');
-        }
+        console.error("Error fetching dashboard data:", error);
       }
     };
 
@@ -81,7 +73,7 @@ export default function Dashboard() {
             {recentEntries.map((entry) => (
               <li key={entry.id} className="bg-gray-100 dark:bg-gray-800 p-4 rounded shadow">
                 <p>
-                  <span className="font-semibold">{entry.metricName}</span> on {entry.entryDate}: {entry.value} {entry.unit}
+                  <span className="font-semibold">{entry.metricName}</span> - {entry.value} on {entry.entryDate}
                 </p>
                 <Link href={`/metrics/${entry.metricId}/entries`} className="text-blue-500 hover:underline">
                   View All Entries

@@ -23,32 +23,50 @@ export default async function handler(req, res) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     userId = decoded.id;
-    console.log("Decoded User ID:", userId); // Confirm decoded user ID
+    console.log("Decoded User ID:", userId);
   } catch (error) {
     console.error("Token verification failed:", error.message);
     return res.status(401).json({ message: 'Invalid token' });
   }
 
   try {
-    // Fetch entries from Airtable and log results
-    const records = await base('Entries')
+    // Fetch entries
+    const entryRecords = await base('Entries')
       .select()
       .all();
 
-    console.log("Entries fetched from Airtable:", records.map(record => record.fields)); // Logs all entry records
+    // Filter entries by User ID
+    const userEntries = entryRecords
+      .filter(record => record.fields['User ID']?.includes(userId))
+      .map(record => ({
+        id: record.id,
+        metricId: record.fields['Metric ID'] ? record.fields['Metric ID'][0] : null,
+        entryDate: record.fields['Entry Date'],
+        value: record.fields['Value'],
+        createdDate: record.fields['Created Date']
+      }));
 
-    // Filter records based on the user ID
-    const userEntries = records.filter(
-      (record) => record.fields['User ID']?.includes(userId)
-    ).map((record) => ({
-      id: record.id,
-      metricId: record.fields['Metric ID'] ? record.fields['Metric ID'][0] : null,
-      entryDate: record.fields['Entry Date'],
-      value: record.fields['Value'],
-    }));
+    // Fetch all metrics to map Metric IDs to Metric Names
+    const metricRecords = await base('Metrics')
+      .select()
+      .all();
 
-    console.log("Filtered entries for user:", userEntries);
-    res.status(200).json({ entries: userEntries });
+    const metricMap = {};
+    metricRecords.forEach(record => {
+      metricMap[record.id] = record.fields['Metric Name'];
+    });
+
+    // Add Metric Name to each entry based on Metric ID
+    const enrichedEntries = userEntries
+      .map(entry => ({
+        ...entry,
+        metricName: metricMap[entry.metricId] || 'Unnamed Metric'
+      }))
+      .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))  // Sort by Created Date descending
+      .slice(0, 5);  // Limit to top 5
+
+    console.log("Filtered, sorted, and enriched entries:", enrichedEntries);
+    res.status(200).json({ entries: enrichedEntries });
   } catch (error) {
     console.error("Error retrieving entries:", error.message);
     res.status(500).json({ message: 'Error retrieving entries', error: error.message });
