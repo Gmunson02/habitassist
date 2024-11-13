@@ -1,6 +1,7 @@
 // pages/api/metrics/addEntry.js
 import jwt from 'jsonwebtoken';
 import Airtable from 'airtable';
+import dayjs from 'dayjs';
 
 const base = new Airtable({ apiKey: process.env.AIRTABLE_PAT }).base(process.env.AIRTABLE_BASE_ID);
 
@@ -26,28 +27,70 @@ export default async function handler(req, res) {
     return res.status(401).json({ message: 'Invalid token' });
   }
 
-  let { metricId, entryDate, value } = req.body;
-  console.log("Received data - Metric ID:", metricId, "Entry Date:", entryDate, "Value:", value);
+  const { entries } = req.body;
 
-  // Ensure value is a number
-  value = Number(value);
-  if (isNaN(value)) {
-    console.error("Value must be a number");
-    return res.status(400).json({ message: 'Value must be a number' });
+  // Validate entries array
+  if (!Array.isArray(entries) || entries.length === 0) {
+    console.error("Entries must be a non-empty array");
+    return res.status(400).json({ message: 'Entries must be a non-empty array' });
   }
 
+  console.log("Received entries:", entries);
+
   try {
-    const newEntry = await base('Entries').create({
-      'User ID': [userId],
-      'Metric ID': [metricId],
-      'Entry Date': entryDate,
-      'Value': value,
+    // Step 1: Add each entry to the Entries table
+    const entryPromises = entries.map(({ metricId, entryDate, value }) => {
+      // Ensure value is a number
+      const numericValue = Number(value);
+      if (isNaN(numericValue)) {
+        throw new Error("Value must be a number");
+      }
+
+      return base('Entries').create({
+        'User ID': [userId],
+        'Metric ID': [metricId],
+        'Entry Date': entryDate,
+        'Value': numericValue,
+      });
     });
 
-    console.log("Entry successfully added:", newEntry.fields);
-    res.status(201).json({ message: 'Entry added', entry: newEntry.fields });
+    await Promise.all(entryPromises);
+    console.log("Entries successfully added");
+
+    // Step 2: Update or create the DailyStatus record for the user
+    const today = dayjs().format('YYYY-MM-DD');
+    const dailyStatusRecords = await base('DailyStatus')
+      .select({
+        fields: ['User ID'],
+        maxRecords: 100,
+      })
+      .firstPage();
+
+    const existingStatusRecord = dailyStatusRecords.find(record => {
+      const userIds = record.fields['User ID'] || [];
+      return userIds.includes(userId);
+    });
+
+    if (existingStatusRecord) {
+      // Update the existing DailyStatus record
+      await base('DailyStatus').update(existingStatusRecord.id, {
+        'Last Entry Date': today,
+        'Entered Today?': true,
+      });
+      console.log("DailyStatus record updated for user.");
+    } else {
+      // Create a new DailyStatus record if one doesn’t exist
+      await base('DailyStatus').create({
+        'User ID': [userId],
+        'Last Entry Date': today,
+        'Entered Today?': true,
+      });
+      console.log("New DailyStatus record created for user.");
+    }
+
+    res.status(201).json({ message: 'Entries added and DailyStatus updated' });
   } catch (error) {
-    console.error("Error adding entry:", error.message);
-    res.status(500).json({ message: 'Error adding entry', error: error.message });
+    console.error("Error adding entries or updating DailyStatus:", error.message);
+    res.status(500).json({ message: 'Error adding entries or updating DailyStatus', error: error.message });
   }
 }

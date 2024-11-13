@@ -48,16 +48,21 @@ export default function DailyEntry() {
       return;
     }
 
+    // Prepare entries array from entries state
+    const entriesArray = Object.entries(entries).map(([metricId, value]) => ({
+      metricId,
+      entryDate: date,
+      value,
+    }));
+
     try {
-      const promises = Object.entries(entries).map(([metricId, value]) =>
-        axios.post(
-          '/api/metrics/addEntry',
-          { metricId, value, entryDate: date },
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
+      // Send entries array to the backend
+      await axios.post(
+        '/api/metrics/addEntry',
+        { entries: entriesArray },  // Ensure this format matches what the API expects
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      await Promise.all(promises);
       setSuccess('Entries added successfully!');
       setEntries({}); // Clear entries after successful submission
       router.push('/dashboard'); // Redirect to the dashboard

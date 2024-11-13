@@ -1,8 +1,6 @@
-// pages/login.js
 import { useState } from 'react';
-import axios from 'axios';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
+import axios from 'axios';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -13,15 +11,39 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    console.log("Starting login process...");
 
     try {
+      // Step 1: Authenticate user and retrieve JWT token
+      console.log("Sending login request...");
       const response = await axios.post('/api/auth/login', { username, password });
       const token = response.data.token;
+      console.log("Login successful, received token:", token);
 
+      // Store the token in localStorage for future requests
       localStorage.setItem('token', token);
-      router.push('/dashboard');
+
+      // Step 2: Check if the user has entered data for today
+      console.log("Checking daily entry status...");
+      const entryCheckResponse = await axios.get('/api/entries/checkDailyEntry', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const { hasEntryForToday } = entryCheckResponse.data;
+      console.log("Daily entry status received:", hasEntryForToday);
+
+      // Step 3: Redirect based on whether an entry exists for today
+      if (hasEntryForToday) {
+        console.log("Redirecting to dashboard...");
+        router.push('/dashboard');
+      } else {
+        console.log("Redirecting to daily entry page...");
+        router.push('/dailyEntry');
+      }
+
     } catch (err) {
-      setError('Invalid username or password');
+      console.error("Error during login or daily entry check:", err);
+      setError(err.response?.data?.message || 'Error logging in');
     }
   };
 
@@ -34,20 +56,25 @@ export default function Login() {
             <label className="block mb-1 dark:text-gray-300">Username</label>
             <input
               type="text"
+              name="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              required
             />
           </div>
           <div>
             <label className="block mb-1 dark:text-gray-300">Password</label>
             <input
               type="password"
+              name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              required
             />
           </div>
+
           {error && <p className="text-red-500">{error}</p>}
           <button
             type="submit"
@@ -56,13 +83,6 @@ export default function Login() {
             Login
           </button>
         </form>
-        
-        <p className="text-center mt-4 dark:text-gray-400">
-          Not a user yet?{' '}
-          <Link href="/signup" className="text-blue-500 hover:underline dark:text-blue-400">
-            Sign up
-          </Link>
-        </p>
       </div>
     </div>
   );
