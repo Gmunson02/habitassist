@@ -29,11 +29,11 @@ export default async function handler(req, res) {
       return res.status(401).json({ message: 'Incorrect password' });
     }
 
-    // Generate JWT
+    // Generate JWT with a long expiration (e.g., 1 year)
     const token = jwt.sign(
       { id: records[0].id, username: user.Username },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '1y' }  // Set to 1 year
     );
 
     res.status(200).json({ message: 'Login successful', token });
