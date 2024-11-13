@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import Link from 'next/link';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -14,16 +15,13 @@ export default function Login() {
     console.log("Starting login process...");
 
     try {
-      // Step 1: Authenticate user and retrieve JWT token
       console.log("Sending login request...");
       const response = await axios.post('/api/auth/login', { username, password });
       const token = response.data.token;
       console.log("Login successful, received token:", token);
 
-      // Store the token in localStorage for future requests
       localStorage.setItem('token', token);
 
-      // Step 2: Check if the user has entered data for today
       console.log("Checking daily entry status...");
       const entryCheckResponse = await axios.get('/api/entries/checkDailyEntry', {
         headers: { Authorization: `Bearer ${token}` },
@@ -32,7 +30,6 @@ export default function Login() {
       const { hasEntryForToday } = entryCheckResponse.data;
       console.log("Daily entry status received:", hasEntryForToday);
 
-      // Step 3: Redirect based on whether an entry exists for today
       if (hasEntryForToday) {
         console.log("Redirecting to dashboard...");
         router.push('/dashboard');
@@ -40,7 +37,6 @@ export default function Login() {
         console.log("Redirecting to daily entry page...");
         router.push('/dailyEntry');
       }
-
     } catch (err) {
       console.error("Error during login or daily entry check:", err);
       setError(err.response?.data?.message || 'Error logging in');
@@ -83,6 +79,14 @@ export default function Login() {
             Login
           </button>
         </form>
+
+        {/* Signup link for new users */}
+        <p className="mt-4 text-center text-gray-600 dark:text-gray-400">
+          New user?{' '}
+          <Link href="/signup" className="text-blue-500 hover:underline">
+            Sign up here
+          </Link>
+        </p>
       </div>
     </div>
   );

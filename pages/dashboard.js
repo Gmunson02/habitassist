@@ -8,7 +8,8 @@ import Link from 'next/link';
 export default function Dashboard() {
   const [metrics, setMetrics] = useState([]);
   const [recentEntries, setRecentEntries] = useState([]);
-  const [user, setUser] = useState({ firstName: '', lastName: '' });
+  const [user, setUser] = useState({ firstName: '', lastName: '', email: '' });
+  const [totalEntries, setTotalEntries] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -33,11 +34,13 @@ export default function Dashboard() {
         const metricsData = metricsResponse.data.metrics;
         setMetrics(metricsData);
 
-        // Fetch recent entries
+        // Fetch recent entries and total count
         const entriesResponse = await axios.get('/api/metrics/getEntries', {
           headers: { Authorization: `Bearer ${token}` },
           params: { limit: 5 },
         });
+
+        setTotalEntries(entriesResponse.data.totalEntries); // Assuming total entries count is returned
 
         // Enrich entries with metric name and unit
         const enrichedEntries = entriesResponse.data.entries.map((entry) => {
@@ -58,7 +61,6 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [router]);
 
-  // Logout function
   const handleLogout = () => {
     localStorage.removeItem('token');
     router.push('/');
@@ -68,8 +70,12 @@ export default function Dashboard() {
     <Layout>
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-center">
-          Welcome {user.firstName} {user.lastName} to Your Habit Assist Dashboard
+          Welcome, {user.firstName} {user.lastName}
         </h2>
+        <p className="text-center text-gray-600 dark:text-gray-400">{user.email}</p>
+        <p className="text-center text-gray-600 dark:text-gray-400">
+          Total Entries: {totalEntries}
+        </p>
         <div className="flex justify-center space-x-4 mt-4">
           <Link href="/profile" className="text-blue-500 hover:underline">
             Profile
@@ -101,6 +107,9 @@ export default function Dashboard() {
                     </Link>
                   </div>
                 </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Last Entry Date: {metric.lastEntryDate ? new Date(metric.lastEntryDate).toLocaleDateString() : 'No entries yet'}
+                </p>
               </li>
             ))}
           </ul>
