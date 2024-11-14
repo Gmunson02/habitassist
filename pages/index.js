@@ -8,32 +8,42 @@ export default function Home() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
       router.push('/login');
       return;
     }
 
-    const checkDailyEntry = async () => {
+    const initializeApp = async () => {
       try {
-        const response = await axios.get(`/api/entries/checkDailyEntry`, {
+        // Step 1: Check if metrics are set up
+        const metricsResponse = await axios.get('/api/metrics/getMetrics', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        
-        console.log("Daily entry check response:", response.data); // Log API response
 
-        if (response.data.hasEntryForToday) {
+        if (metricsResponse.data.metrics.length === 0) {
+          // Redirect to setup page if no metrics are set up
+          router.push('/setup');
+          return;
+        }
+
+        // Step 2: Check if a daily entry exists
+        const entryResponse = await axios.get(`/api/entries/checkDailyEntry`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (entryResponse.data.hasEntryForToday) {
           router.push('/dashboard');
         } else {
           router.push('/dailyEntry');
         }
       } catch (error) {
-        console.error("Error checking daily entry status:", error);
-        router.push('/dashboard');
+        console.error("Error during initialization:", error);
+        router.push('/dashboard'); // Default to dashboard if any error occurs
       }
     };
 
-    checkDailyEntry();
+    initializeApp();
   }, [router]);
 
   return <p>Loading...</p>;

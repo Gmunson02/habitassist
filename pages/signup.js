@@ -24,23 +24,54 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    // Convert `age` field to a number
+  
     const formattedData = {
       ...formData,
-      age: Number(formData.age), // Convert age to a number
+      age: Number(formData.age),
     };
-
+  
     try {
+      // Make the signup request
       const response = await axios.post('/api/auth/signup', formattedData);
+  
+      // Log the entire response to check for token presence
+      console.log("Signup response data:", response.data);
+  
+      // Extract the token from the response
       const token = response.data.token;
-
-      // Store the token in localStorage and redirect to the dashboard
-      localStorage.setItem('token', token);
-      router.push('/dashboard');
+  
+      // Check if the token exists and is valid before storing
+      if (token) {
+        // Store the token in localStorage
+        localStorage.setItem('token', token);
+  
+        // Confirm that the token is stored before redirecting
+        await ensureTokenStored();
+  
+        // Redirect to the setup page
+        router.push('/setup');
+      } else {
+        throw new Error("Token is missing from the signup response.");
+      }
     } catch (err) {
+      // Handle error in case token is missing or another issue occurs
+      console.error("Error during signup:", err.message || err);
       setError(err.response?.data?.message || 'Error creating user');
     }
+  };
+
+  // Function to check that token is stored in localStorage before proceeding
+  const ensureTokenStored = () => {
+    return new Promise((resolve) => {
+      const checkToken = () => {
+        if (localStorage.getItem('token')) {
+          resolve();
+        } else {
+          setTimeout(checkToken, 50); // Retry every 50ms
+        }
+      };
+      checkToken();
+    });
   };
 
   return (

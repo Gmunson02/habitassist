@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import Airtable from 'airtable';
 
 const base = new Airtable({ apiKey: process.env.AIRTABLE_PAT }).base(process.env.AIRTABLE_BASE_ID);
@@ -33,7 +34,15 @@ export default async function handler(req, res) {
       Sex: sex,
     });
 
-    res.status(201).json({ message: 'User created', user: createdUser.fields });
+    // Generate a JWT token
+    const token = jwt.sign(
+      { id: createdUser.id, username: createdUser.fields.Username },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' } // Token expiration time, e.g., 1 hour
+    );
+
+    // Respond with the token and user details
+    res.status(201).json({ message: 'User created', token, user: createdUser.fields });
   } catch (error) {
     res.status(500).json({ message: 'Error creating user', error: error.message });
   }
