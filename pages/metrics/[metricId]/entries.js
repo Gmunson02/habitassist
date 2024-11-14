@@ -44,9 +44,9 @@ export default function Entries() {
     const token = localStorage.getItem('token');
 
     try {
-      await axios.delete(`/api/metrics/deleteEntry`, {
+      // Pass entryId as a query parameter instead of in data
+      await axios.delete(`/api/metrics/deleteEntry?entryId=${entryId}`, {
         headers: { Authorization: `Bearer ${token}` },
-        data: { entryId },
       });
       setEntries(entries.filter((entry) => entry.id !== entryId));
     } catch (error) {
@@ -96,9 +96,10 @@ export default function Entries() {
         <Link href="/dashboard" className="block w-full bg-blue-500 text-white py-2 rounded text-center hover:bg-blue-600">
           Back to Dashboard
         </Link>
-        <Link href={`/metrics/${metricId}/new-entry`} className="block w-full bg-green-500 text-white py-2 rounded text-center hover:bg-green-600">
+        <Link href={`/metrics/${metricId}/newEntry`} className="block w-full bg-green-500 text-white py-2 rounded text-center hover:bg-green-600">
           Add New Entry
         </Link>
+
       </div>
     </Layout>
   );

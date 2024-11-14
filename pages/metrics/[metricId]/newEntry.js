@@ -36,23 +36,32 @@ export default function NewEntry() {
     setError('');
 
     const token = localStorage.getItem('token');
+
+    // Ensure `value` is a valid number
+    const numericValue = parseFloat(value);
+    if (isNaN(numericValue)) {
+      setError('Please enter a valid number for the value.');
+      return;
+    }
+
     try {
+      // Send entries as an array of one object
       await axios.post(
         '/api/metrics/addEntry',
-        { metricId, value, entryDate: date },
+        { entries: [{ metricId, entryDate: date, value: numericValue }] },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       router.push(`/metrics/${metricId}/entries`);
     } catch (error) {
-      console.error("Error adding entry:", error);
-      setError('Error adding entry. Please try again.');
+      console.error("Error adding entry:", error.response ? error.response.data : error);
+      setError(error.response?.data?.message || 'Error adding entry. Please try again.');
     }
   };
 
   return (
     <Layout>
       <h2 className="text-xl font-semibold mb-4 text-center">Add New Entry for {metricName}</h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
         <div>
           <label className="block mb-1 dark:text-gray-300">Value</label>
